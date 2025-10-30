@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Sanitize inputs
+    // Sanitize inputs - no id field
     const sanitizedData = {
       ambulanceId: trimmedAmbulanceId,
       driverName: driverName.trim(),

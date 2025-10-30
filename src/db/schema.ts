@@ -2,8 +2,7 @@ import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
 // Ambulance information table
 export const ambulanceInfo = sqliteTable('ambulance_info', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  ambulanceId: text('ambulance_id').notNull().unique(),
+  ambulanceId: text('ambulance_id').primaryKey(),
   driverName: text('driver_name').notNull(),
   vehicleNumber: text('vehicle_number').notNull(),
   contactNumber: text('contact_number').notNull(),
@@ -14,8 +13,7 @@ export const ambulanceInfo = sqliteTable('ambulance_info', {
 
 // Ambulance trips table for history and reports
 export const ambulanceTrips = sqliteTable('ambulance_trips', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  tripId: text('trip_id').notNull().unique(),
+  tripId: text('trip_id').primaryKey(),
   ambulanceId: text('ambulance_id').notNull(),
   driverName: text('driver_name').notNull(),
   vehicleNumber: text('vehicle_number').notNull(),

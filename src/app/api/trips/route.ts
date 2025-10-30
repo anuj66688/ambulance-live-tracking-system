@@ -7,6 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
+      trip_id,
       ambulanceId,
       driverName,
       vehicleNumber,
@@ -14,10 +15,14 @@ export async function POST(request: NextRequest) {
       startLng,
       destLat,
       destLng,
-      distanceKm,
+      primaryDistanceKm,
+      shortcutDistanceKm,
       etaMin,
       endTime,
-      averageSpeed
+      averageSpeed,
+      status,
+      primaryRoute,
+      shortcutRoute
     } = body;
 
     // Validate required fields
@@ -63,28 +68,14 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    if (!distanceKm) {
-      return NextResponse.json(
-        { error: 'distanceKm is required', code: 'MISSING_DISTANCE_KM' },
-        { status: 400 }
-      );
-    }
-    if (!etaMin) {
-      return NextResponse.json(
-        { error: 'etaMin is required', code: 'MISSING_ETA_MIN' },
-        { status: 400 }
-      );
-    }
 
-    // Auto-generate tripId
-    const timestamp = Date.now();
-    const randomDigits = Math.floor(1000 + Math.random() * 9000);
-    const tripId = `TRIP${timestamp}${randomDigits}`;
+    // Auto-generate tripId if not provided
+    const tripId = trip_id || `TRIP${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
 
     // Auto-generate timestamps
     const now = new Date().toISOString();
 
-    // Create trip data
+    // Create trip data - no id field
     const tripData: any = {
       tripId,
       ambulanceId: ambulanceId.toString().trim(),
@@ -94,21 +85,20 @@ export async function POST(request: NextRequest) {
       startLng: startLng.toString(),
       destLat: destLat.toString(),
       destLng: destLng.toString(),
-      distanceKm: distanceKm.toString(),
-      etaMin: etaMin.toString(),
       startTime: now,
-      status: 'in-progress',
+      status: status || 'in-progress',
       createdAt: now,
       updatedAt: now
     };
 
     // Add optional fields if provided
-    if (endTime) {
-      tripData.endTime = endTime;
-    }
-    if (averageSpeed) {
-      tripData.averageSpeed = averageSpeed.toString();
-    }
+    if (primaryDistanceKm) tripData.primaryDistanceKm = primaryDistanceKm.toString();
+    if (shortcutDistanceKm) tripData.shortcutDistanceKm = shortcutDistanceKm.toString();
+    if (etaMin) tripData.etaMin = etaMin.toString();
+    if (endTime) tripData.endTime = endTime;
+    if (averageSpeed) tripData.averageSpeed = averageSpeed.toString();
+    if (primaryRoute) tripData.primaryRoute = primaryRoute;
+    if (shortcutRoute) tripData.shortcutRoute = shortcutRoute;
 
     // Insert into database
     const newTrip = await db
@@ -238,8 +228,11 @@ export async function PUT(request: NextRequest) {
     if (body.destLng !== undefined) {
       updates.destLng = body.destLng.toString();
     }
-    if (body.distanceKm !== undefined) {
-      updates.distanceKm = body.distanceKm.toString();
+    if (body.primaryDistanceKm !== undefined) {
+      updates.primaryDistanceKm = body.primaryDistanceKm.toString();
+    }
+    if (body.shortcutDistanceKm !== undefined) {
+      updates.shortcutDistanceKm = body.shortcutDistanceKm.toString();
     }
     if (body.etaMin !== undefined) {
       updates.etaMin = body.etaMin.toString();
@@ -265,6 +258,12 @@ export async function PUT(request: NextRequest) {
     }
     if (body.averageSpeed !== undefined) {
       updates.averageSpeed = body.averageSpeed.toString();
+    }
+    if (body.primaryRoute !== undefined) {
+      updates.primaryRoute = body.primaryRoute;
+    }
+    if (body.shortcutRoute !== undefined) {
+      updates.shortcutRoute = body.shortcutRoute;
     }
 
     // Always update updatedAt

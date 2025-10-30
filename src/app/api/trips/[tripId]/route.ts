@@ -55,7 +55,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { endTime, status, averageSpeed, distanceKm, etaMin } = body;
+    const { endTime, status, averageSpeed, primaryDistanceKm, shortcutDistanceKm, etaMin } = body;
 
     // Validate status if provided
     if (status && !['in-progress', 'completed', 'cancelled'].includes(status)) {
@@ -90,7 +90,8 @@ export async function PUT(
     if (endTime !== undefined) updates.endTime = endTime;
     if (status !== undefined) updates.status = status;
     if (averageSpeed !== undefined) updates.averageSpeed = averageSpeed;
-    if (distanceKm !== undefined) updates.distanceKm = distanceKm;
+    if (primaryDistanceKm !== undefined) updates.primaryDistanceKm = primaryDistanceKm;
+    if (shortcutDistanceKm !== undefined) updates.shortcutDistanceKm = shortcutDistanceKm;
     if (etaMin !== undefined) updates.etaMin = etaMin;
 
     // Auto-set endTime if status changed to "completed" and endTime not provided

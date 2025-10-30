@@ -1,0 +1,1 @@
+DROP TABLE `ambulance_trips`;
